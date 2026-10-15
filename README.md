@@ -2,7 +2,6 @@
 
 Aplikasi web pencatatan keuangan pribadi: mencatat pemasukan/pengeluaran, memantau saldo IDR dan MYR secara terpisah, mengatur kurs manual, mencari riwayat transaksi, dan melihat laporan pengeluaran tujuh hari terakhir.
 
-
 ## Stack
 
 | Bagian | Teknologi |
@@ -15,7 +14,7 @@ Aplikasi web pencatatan keuangan pribadi: mencatat pemasukan/pengeluaran, memant
 | Test | Vitest |
 | Deploy | Vercel |
 
-Catatan: repo ini memakai Next.js App Router. Struktur `src/`, React Router, dan env `VITE_*` yang disebut di `.agents/task-instruction.md` **tidak** dipakai; pemetaan adaptasinya ada di `.agents/task-todolist.md`.
+Catatan: repo ini memakai Next.js App Router. Struktur `src/`, React Router, dan env `VITE_*` yang disebut di `.agents/task-instruction.md` **tidak** dipakai;
 
 ## Persyaratan
 
