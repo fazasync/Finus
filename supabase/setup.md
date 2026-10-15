@@ -5,8 +5,15 @@ Panduan menyiapkan backend Supabase untuk Finus (Auth + Postgres + RLS).
 ## 1. Buat proyek
 
 1. Masuk https://supabase.com/dashboard → **New project**.
-2. Simpan **project ref**, **database password**, dan pilih region terdekat.
+2. Simpan **project ref**, **database password**, dan pilih region terdekat (untuk ID/MY: `ap-southeast-1` / Singapore).
 3. Tunggu sampai provisioning selesai.
+
+Alternatif lewat CLI (setelah `npx supabase login`):
+
+```bash
+npx supabase orgs list
+npx supabase projects create finus --org-id  zrpmixhgpshvtpyyicwm --region ap-southeast-1 --db-password "#q?nqhuTj/nmy8V"
+```
 
 ## 2. Ambil kredensial untuk frontend
 
@@ -29,13 +36,15 @@ Migration harus dijalankan **berurutan** pada schema `public`:
 
 | File | Isi |
 |---|---|
-| `0001_profiles.sql` | Tabel `profiles` + constraint |
-| `0002_balances.sql` | Tabel `balances` + unique `(user_id, currency)` |
-| `0003_categories.sql` | Tabel `categories` + unique kategori sistem |
-| `0004_transactions.sql` | Tabel `transactions` + constraint nilai + indeks |
-| `0005_exchange_rates.sql` | Tabel `exchange_rates` + indeks |
-| `0006_triggers.sql` | `updated_at`, bootstrap profil, validasi kategori transaksi |
-| `0007_rls_policies.sql` | Aktifkan RLS + policy per tabel |
+| `20260101000001_profiles.sql` | Tabel `profiles` + constraint |
+| `20260101000002_balances.sql` | Tabel `balances` + unique `(user_id, currency)` |
+| `20260101000003_categories.sql` | Tabel `categories` + unique kategori sistem |
+| `20260101000004_transactions.sql` | Tabel `transactions` + constraint nilai + indeks |
+| `20260101000005_exchange_rates.sql` | Tabel `exchange_rates` + indeks |
+| `20260101000006_triggers.sql` | `updated_at`, bootstrap profil, validasi kategori transaksi |
+| `20260101000007_rls_policies.sql` | Aktifkan RLS + policy per tabel |
+
+> Nama file wajib mengikuti pola CLI `<timestamp>_nama.sql` (14 digit). Jangan mengubah urutan timestamp-nya.
 
 Pilih salah satu cara:
 
@@ -44,19 +53,25 @@ Pilih salah satu cara:
 Dashboard → **SQL Editor** → tempel isi file satu per satu secara berurutan → **Run**.
 Setelah itu jalankan `seed.sql` untuk kategori sistem.
 
-### B. Supabase CLI
+### B. Supabase CLI (disarankan)
 
 ```bash
 npx supabase login
-npx supabase link --project-ref <project-ref>
-npx supabase db push
+npx supabase link --project-ref qohmaglntbppabyrrvrc --password "#q?nqhuTj/nmy8V"
+npx supabase db push --include-seed
 ```
 
-`db push` menjalankan semua file di `supabase/migrations/`. Untuk seed:
+`db push` menjalankan semua file di `supabase/migrations/`; seed mengikuti `[db.seed]` di `supabase/config.toml`. Kalau perlu seed manual:
 
 ```bash
-npx supabase db execute --file supabase/seed.sql
-# atau tempel isi seed.sql ke SQL Editor
+npx supabase db query --linked --file supabase/seed.sql
+```
+
+Verifikasi di remote:
+
+```bash
+npx supabase migration list --linked
+npx supabase db query --linked "select count(*) from public.categories where user_id is null"
 ```
 
 ## 4. Aktifkan Email Auth

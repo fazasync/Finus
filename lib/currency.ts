@@ -12,14 +12,14 @@ export function currencyLabel(currency: Currency): string {
 
 export function formatCurrency(value: number, currency: Currency): string {
   if (!Number.isFinite(value)) {
-    return currency === "IDR" ? "Rp0" : "RM0,00";
+    return currency === "IDR" ? "Rp0" : "RM0.00";
   }
 
   if (currency === "IDR") {
     return `Rp${new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(value)}`;
   }
 
-  return `RM${new Intl.NumberFormat("ms-MY", {
+  return `RM${new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value)}`;

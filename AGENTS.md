@@ -17,7 +17,8 @@ Next.js 16 App Router + React 19 + Tailwind v4 + TypeScript (strict). Target dep
 - `npm run dev` — dev server (Turbopack) on :3000
 - `npm run build` — production build
 - `npm run lint` — ESLint (`eslint` flat config)
-- `npx tsc --noEmit` — typecheck (no `typecheck` script exists; there is no test runner yet)
+- `npm run typecheck` — `tsc --noEmit`
+- `npm test` — Vitest (`lib/__tests__/*.test.ts`); `npm run test:watch` for watch mode
 
 ## Stack conflicts — read before coding
 

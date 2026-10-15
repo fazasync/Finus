@@ -61,8 +61,9 @@ Buka http://localhost:3000
 
 ```bash
 npm run lint        # ESLint (flat config)
-npx tsc --noEmit    # Type-check (belum ada script npm terpisah)
-npx vitest run      # Unit test logika (saldo, konversi, laporan, tanggal)
+npm run typecheck   # Type-check (tsc --noEmit)
+npm test            # Unit test logika (vitest run: saldo, konversi, laporan, tanggal)
+npm run test:watch  # Unit test mode watch
 npm run build       # Production build
 ```
 
@@ -72,12 +73,13 @@ Semua skema, constraint, trigger, dan policy RLS ada di `supabase/migrations/`, 
 
 Ringkas, salah satu dari:
 
-1. **Dashboard SQL Editor** — jalankan isi setiap file di `supabase/migrations/` secara berurutan (`0001_...` → `0006_...`).
-2. **Supabase CLI**:
+1. **Dashboard SQL Editor** — jalankan isi setiap file di `supabase/migrations/` secara berurutan (`20260101000001_...` → `20260101000007_...`).
+2. **Supabase CLI** (disarankan):
    ```bash
-   supabase link --project-ref <project-ref>
-   supabase db push
+   npx supabase link --project-ref <project-ref> --password "<password>"
+   npx supabase db push --include-seed
    ```
+   Konfigurasi lokal ada di `supabase/config.toml` (`supabase init`). Nama file migration harus mengikuti pola CLI `<timestamp>_nama.sql`.
 
 ## Keamanan & RLS
 

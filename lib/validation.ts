@@ -27,18 +27,32 @@ export function validatePassword(password: string): string | null {
 }
 
 /**
- * Mengubah input nominal menjadi angka. Menerima "1.250.000", "1250,5", "35 000".
+ * Mengubah input nominal menjadi angka. Menerima "1.250.000", "350,50", "1.250.000,75", "35 000".
+ * Bila hanya ada titik, tiga digit di belakang titik dianggap pemisah ribuan.
  */
 export function parseAmount(input: string): number {
-  const normalized = input
-    .replace(/\s/g, "")
-    .replace(/\./g, (match, offset: number, full: string) => {
-      const decimals = full.length - offset - 1;
-      return decimals === 3 ? "" : match;
-    })
-    .replace(",", ".");
+  let value = input.trim().replace(/\s/g, "");
 
-  const parsed = Number(normalized);
+  if (!value) {
+    return Number.NaN;
+  }
+
+  const hasComma = value.includes(",");
+  const hasDot = value.includes(".");
+
+  if (hasComma && hasDot) {
+    value = value.replace(/\./g, "").replace(",", ".");
+  } else if (hasComma) {
+    value = value.replace(/,/g, ".");
+  } else if (hasDot) {
+    const segments = value.split(".");
+    const isThousands = segments.slice(1).every((segment) => segment.length === 3);
+    if (isThousands) {
+      value = segments.join("");
+    }
+  }
+
+  const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : Number.NaN;
 }
 
