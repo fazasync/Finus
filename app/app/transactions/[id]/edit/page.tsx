@@ -12,7 +12,7 @@ import { useFormContext } from "@/hooks/use-form-context";
 import { useAsyncData } from "@/hooks/use-async-data";
 import type { TransactionWithCategory } from "@/types";
 
-export default function EditTransactionPage({ params }: PageProps<"/transactions/[id]/edit">) {
+export default function EditTransactionPage({ params }: PageProps<"/app/transactions/[id]/edit">) {
   const router = useRouter();
   const context = useFormContext();
   const { id } = use(params);
