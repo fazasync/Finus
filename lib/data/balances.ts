@@ -1,5 +1,3 @@
-"use client";
-
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import { toError } from "./errors";
@@ -17,30 +15,28 @@ export async function fetchBalances(): Promise<Balance[]> {
 }
 
 /**
- * Menyimpan saldo awal. Hanya boleh dipanggil untuk mata uang yang belum punya baris;
- * baris yang sudah ada tidak diubah (aturan saldo awal diisi sekali).
+ * Menyimpan saldo awal. Mendukung insert dan update per mata uang (upsert).
  */
-export async function setInitialBalances(
+export async function saveInitialBalances(
   userId: string,
-  existing: Currency[],
   entries: Array<{ currency: Currency; initialBalance: number }>,
 ): Promise<void> {
-  const toInsert = entries.filter((entry) => !existing.includes(entry.currency));
-
-  if (toInsert.length === 0) {
+  if (entries.length === 0) {
     return;
   }
 
   const supabase = getSupabaseBrowserClient();
-  const { error } = await supabase.from("balances").insert(
-    toInsert.map((entry) => ({
+  const { error } = await supabase.from("balances").upsert(
+    entries.map((entry) => ({
       user_id: userId,
       currency: entry.currency,
       initial_balance: entry.initialBalance,
     })),
+    { onConflict: "user_id,currency" },
   );
 
   if (error) {
     throw toError(error);
   }
 }
+

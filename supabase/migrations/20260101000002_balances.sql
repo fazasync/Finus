@@ -1,5 +1,5 @@
 -- 0002: balances — saldo awal per mata uang. Satu baris per (user, currency).
--- Baris dibuat saat pengguna pertama kali menyimpan saldo awal; setelah itu tidak diubah lagi dari UI.
+-- Baris dibuat saat pengguna pertama kali menyimpan saldo awal; setelah itu dapat diperbarui dari UI (upsert per mata uang).
 create table if not exists public.balances (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
