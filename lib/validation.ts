@@ -42,7 +42,7 @@ export function parseAmount(input: string): number {
   return Number.isFinite(parsed) ? parsed : Number.NaN;
 }
 
-export function validateAmount(input: string, currency: "IDR" | "MYR"): string | null {
+export function validateAmount(input: string): string | null {
   if (!input.trim()) {
     return "Nominal wajib diisi.";
   }
