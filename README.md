@@ -2,7 +2,6 @@
 
 Aplikasi web pencatatan keuangan pribadi: mencatat pemasukan/pengeluaran, memantau saldo IDR dan MYR secara terpisah, mengatur kurs manual, mencari riwayat transaksi, dan melihat laporan pengeluaran tujuh hari terakhir.
 
-Kebutuhan produk, aturan bisnis, dan spesifikasi desain ada di `.agents/prd.md` dan `.agents/design.md`.
 
 ## Stack
 
