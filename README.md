@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Finus — Personal Finance Tracker (IDR / MYR)
 
-## Getting Started
+Aplikasi web pencatatan keuangan pribadi: mencatat pemasukan/pengeluaran, memantau saldo IDR dan MYR secara terpisah, mengatur kurs manual, mencari riwayat transaksi, dan melihat laporan pengeluaran tujuh hari terakhir.
 
-First, run the development server:
+Kebutuhan produk, aturan bisnis, dan spesifikasi desain ada di `.agents/prd.md` dan `.agents/design.md`.
+
+## Stack
+
+| Bagian | Teknologi |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack, `cacheComponents`) |
+| UI | React 19, Tailwind CSS v4 (CSS-first, tanpa `tailwind.config.*`) |
+| Bahasa | TypeScript strict |
+| Data & Auth | Supabase (`@supabase/supabase-js`) — Postgres + Supabase Auth, RLS wajib |
+| Grafik | Recharts |
+| Test | Vitest |
+| Deploy | Vercel |
+
+Catatan: repo ini memakai Next.js App Router. Struktur `src/`, React Router, dan env `VITE_*` yang disebut di `.agents/task-instruction.md` **tidak** dipakai; pemetaan adaptasinya ada di `.agents/task-todolist.md`.
+
+## Persyaratan
+
+- Node.js 22+ (dikembangkan pada Node 24)
+- npm
+- Proyek Supabase (gratis cukup) untuk fitur autentikasi dan data
+
+## Instalasi
+
+```bash
+npm install
+```
+
+## Environment Variables
+
+Salin contoh lalu isi kredensial Supabase:
+
+```bash
+copy .env.example .env.local
+```
+
+Isi `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon/publishable-key>
+```
+
+Ambil dari Supabase Dashboard → **Project Settings → API**.
+
+> Semua variabel `NEXT_PUBLIC_*` ikut ter-bundle ke browser. **Jangan pernah** menaruh `service_role` key (atau secret apa pun) di variabel `NEXT_PUBLIC_*`, di kode klien, atau di environment Vercel frontend. Key itu melewati RLS dan akan membocorkan seluruh data.
+
+## Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Perintah Pemeriksaan
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint        # ESLint (flat config)
+npx tsc --noEmit    # Type-check (belum ada script npm terpisah)
+npx vitest run      # Unit test logika (saldo, konversi, laporan, tanggal)
+npm run build       # Production build
+```
 
-## Learn More
+## Database (Supabase)
 
-To learn more about Next.js, take a look at the following resources:
+Semua skema, constraint, trigger, dan policy RLS ada di `supabase/migrations/`, dengan panduan langkah demi langkah di [`supabase/setup.md`](supabase/setup.md). Ada juga `supabase/seed.sql` untuk kategori awal (biasanya tidak perlu karena bootstrap kategori dijalankan otomatis saat akun dibuat).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Ringkas, salah satu dari:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Dashboard SQL Editor** — jalankan isi setiap file di `supabase/migrations/` secara berurutan (`0001_...` → `0006_...`).
+2. **Supabase CLI**:
+   ```bash
+   supabase link --project-ref <project-ref>
+   supabase db push
+   ```
 
-## Deploy on Vercel
+## Keamanan & RLS
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Row Level Security **aktif di semua tabel data pengguna**. Setiap policy mencocokkan pemilik baris dengan `auth.uid()`; permintaan tanpa login ditolak.
+- Isolasi akun tidak bergantung pada UI. Route guard di aplikasi hanya untuk pengalaman pengguna — batas keamanan sebenarnya adalah policy RLS, yang tetap berlaku meski request dibuat di luar aplikasi.
+- Frontend hanya memakai **anon/publishable key** bersama RLS. `service_role` key tidak pernah ada di kode atau environment frontend.
+- Saldo selalu dihitung dari `initial_balance` + transaksi tersimpan, bukan dari nilai yang dikirim browser.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy ke Vercel
+
+1. Push repo ke GitHub.
+2. Di Vercel, **Import Git Repository** (preset framework Next.js terdeteksi otomatis; biarkan build command default `next build`).
+3. Tambahkan environment variables `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY` (jangan `service_role`).
+4. Terapkan migration ke proyek Supabase produksi (lihat `supabase/setup.md`).
+5. Di Supabase → **Authentication → URL Configuration**, tambahkan domain Vercel ke **Site URL** dan **Redirect URLs**.
+6. Deploy, lalu uji login, CRUD transaksi, saldo, kurs, laporan, dan logout dari HP maupun desktop.
+
+## Struktur Proyek
+
+```text
+app/
+  (auth)/            # halaman login & register
+  (app)/             # area privat: dashboard, transactions, reports, settings
+components/
+  ui/                # button, input, card, dialog, badge, toast, state
+  layout/            # AppShell, sidebar desktop, bottom nav mobile, PageHeader
+  transactions/ dashboard/ reports/ providers/
+lib/
+  supabase/          # konfigurasi client
+  currency.ts date.ts balance.ts validation.ts
+supabase/
+  migrations/ seed.sql setup.md
+types/
+```
